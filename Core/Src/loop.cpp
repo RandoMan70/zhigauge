@@ -18,6 +18,8 @@ Trigger *igTrigger;
 int ignition_angle;
 int o2sensor = 222;
 int rpms = 1000;
+unsigned long ig_timestamp = 0;
+GPIO_PinState ig_state = GPIO_PIN_RESET;
 
 //                             0         1         2         3         4         5         6         7
 const char * be_report_mask = "*IXXX.X**iR200G200B200**OXXX.X**oR200G200B200**RXXXX**GXXX.X,XXX.X*";
@@ -82,16 +84,24 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 
 extern "C" void loop() {
   unsigned long now = dwt_timer_get();
-  GPIO_PinState state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, state);
-  crAngle->tick(now, state);
   wTimer->tick();
   igTrigger->update(0, now);
   Serial1.flush();
-  unsigned long t2 = dwt_timer_get();
+
+  if (ig_timestamp != 0) {
+    crAngle->tick(ig_timestamp, ig_state);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, ig_state);
+    ig_timestamp = 0;
+  }
+
+//  unsigned long t2 = dwt_timer_get();
 //
 //  if (t2-now > 1200) {
 //      Serial1.printf("Too long: %lu\n", t2-now);
 //  }
 }
 
+extern "C" void gpio_interrupt(uint16_t GPIO_Pin) {
+  ig_timestamp = dwt_timer_get();
+  ig_state = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15);
+}

@@ -22,7 +22,7 @@ int CAngle::angle(unsigned long ts) {
       return -1;
   }
 
-  return 3600 * m_last_edge_id / m_edge_resolution + 3600 * (ts - m_last_edge_ts) / m_last_edge_interval / m_edge_resolution;
+  return (3600 * m_last_edge_id + 3600 * ((ts - m_last_edge_ts) / m_last_edge_interval)) / m_edge_resolution;
 }
 
 int CAngle::rpm() {
@@ -57,7 +57,7 @@ void CAngle::edge(int id, unsigned long ts) {
 }
 
 void CAngle::reset() {
-  Serial1.printf("Reset\n");
+//  Serial1.printf("Reset\n");
   m_last_edge_id = -1;
   m_last_edge_ts = 0;
   m_last_edge_interval = 0;
