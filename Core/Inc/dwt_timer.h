@@ -9,7 +9,7 @@
 
 void dwt_timer_init();
 uint32_t dwt_timer_get();
-void dwt_timer_delay(int ticks);
+void dwt_timer_delay(unsigned long ticks);
 uint32_t dwt_timer_resolution();
 
 #endif  //  __DWM_TIMER_HEADER

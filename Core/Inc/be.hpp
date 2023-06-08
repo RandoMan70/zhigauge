@@ -1,24 +1,16 @@
 // Support for Bluetooth Electronics dashboard https://keuwl.com/apps/bluetoothelectronics/
+#ifndef __BLUETOOTH_ELECTRONICS_WRITERS_HEADER
+#define __BLUETOOTH_ELECTRONICS_WRITERS_HEADER
 
+#include "main.h"
+#include "serial.hpp"
 #include <string.h>
 #include <string>
 
-class BEWriteScheduler {
-public:
-  void publish(const char * s) {
-    strcpy(buffer, s);
-  }
-  void publish(std::string s) {
-    strcpy(buffer, s.c_str());
-  }
-private:
-  char buffer[256];
-};
-
 class BEGenericWriter {
 public:
-  explicit BEGenericWriter(BEWriteScheduler *scheduler){
-    m_scheduler = scheduler;
+  explicit BEGenericWriter(SerialASyncWriter *writer){
+    m_writer = writer;
   }
 protected:
   void start(const char sign) {
@@ -36,20 +28,20 @@ protected:
   }
   void commit() {
     buf += "*";
-    m_scheduler->publish(buf);
-    buf = "";
+    m_writer->write(buf.c_str());
+    buf.clear();
   }
   void reserve(int value) {
     buf.reserve(value);
   }
 private:
   std::string buf;
-  BEWriteScheduler *m_scheduler;
+  SerialASyncWriter *m_writer;
 };
 
 class BEValue : public BEGenericWriter {
 public:
-  BEValue(BEWriteScheduler *scheduler, const char sign) : BEGenericWriter(scheduler) {
+  BEValue(SerialASyncWriter *writer, const char sign) : BEGenericWriter(writer) {
     m_sign = sign;
     reserve(16);
   };
@@ -107,7 +99,7 @@ public:
 
 class BELamp : BEGenericWriter {
 public:
-  BELamp(BEWriteScheduler *scheduler, const char sign) : BEGenericWriter(scheduler) {
+  BELamp(SerialASyncWriter *writer, const char sign) : BEGenericWriter(writer) {
     m_sign = sign;
     reserve(16);
   }
@@ -132,7 +124,7 @@ private:
 
 class BEGraph : BEGenericWriter {
 public:
-  BEGraph(BEWriteScheduler *scheduler, const char sign, int count) : BEGenericWriter(scheduler) {
+  BEGraph(SerialASyncWriter *writer, const char sign, int count) : BEGenericWriter(writer) {
     m_sign = sign;
     m_count = count;
     m_values = new float[count];
@@ -162,3 +154,6 @@ private:
   int m_count;
   float *m_values;
 };
+
+#endif  //  __BLUETOOTH_ELECTRONICS_WRITERS_HEADER
+
