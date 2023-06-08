@@ -8,6 +8,7 @@ class CAngle {
     CAngle(int teeth_total, int teeth_gap, unsigned long ts_resolution);
     void tick(unsigned long ts, int state);
     int angle(unsigned long ts);
+    int rpm();
   private:
     void edge(int id, unsigned long ts);
     void reset();
@@ -16,7 +17,8 @@ class CAngle {
     static void reset_cb(unsigned long ts, void * arg);
 
     int m_edge_count;
-    int m_edge_resolution;
+    unsigned long m_edge_resolution;
+    unsigned long m_timer_resolution;
     unsigned long m_minimal_edge_interval;
 
     int m_last_edge_id;

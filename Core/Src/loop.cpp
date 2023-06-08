@@ -23,6 +23,7 @@ int rpms = 1000;
 const char * be_report_mask = "*IXXX.X**iR200G200B200**OXXX.X**oR200G200B200**RXXXX**GXXX.X,XXX.X*";
 char *be_report;
 void writer(void *arg) {
+  rpms = crAngle->rpm();
   char *mask = be_report;
   int angle = crAngle->angle(dwt_timer_get());
   if (angle < 0) {
@@ -86,9 +87,9 @@ extern "C" void loop() {
   crAngle->tick(now, state);
   wTimer->tick();
   igTrigger->update(0, now);
-
-  unsigned long t2 = dwt_timer_get();
   Serial1.flush();
+  unsigned long t2 = dwt_timer_get();
+//
 //  if (t2-now > 1200) {
 //      Serial1.printf("Too long: %lu\n", t2-now);
 //  }
