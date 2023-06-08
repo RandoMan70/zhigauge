@@ -15,33 +15,46 @@ Timer *wTimer;
 CAngle *crAngle;
 Trigger *igTrigger;
 
-
 int ignition_angle;
-int o2sensor = 22.2;
-int rpms;
+int o2sensor = 222;
+int rpms = 1000;
 
-const char *int10str(int value) {
-
-}
-
+//                             0         1         2         3         4         5         6         7
+const char * be_report_mask = "*IXXX.X**iR200G200B200**OXXX.X**oR200G200B200**RXXXX**GXXX.X,XXX.X*";
+char *be_report;
 void writer(void *arg) {
+  char *mask = be_report;
   int angle = crAngle->angle(dwt_timer_get());
   if (angle < 0) {
-      Serial1.write("Stall\n");
-      return;
+      angle = 0;
   }
-  if (angle > 36000) {
-      Serial1.write("     !!!!!        ");
-  }
-  char buf[16];
-  buf[0] = (angle / 1000) % 10  + '0';
-  buf[1] = (angle / 100) % 10 + '0';
-  buf[2] = (angle / 10) % 10 + '0';
-  buf[3] = '.';
-  buf[4] = (angle) % 10 + '0';
-  buf[5] = '\n';
-  buf[6] = '\0';
-  Serial1.write(buf);
+
+  mask[2] = (angle / 1000) % 10  + '0';
+  mask[3] = (angle / 100) % 10 + '0';
+  mask[4] = (angle / 10) % 10 + '0';
+  mask[6] = (angle) % 10 + '0';
+
+  mask[25] = (o2sensor / 1000) % 10 + '0';
+  mask[26] = (o2sensor / 100) % 10 + '0';
+  mask[27] = (o2sensor / 10) % 10 + '0';
+  mask[29] = (o2sensor) % 10 + '0';
+
+  mask[48] = (rpms / 1000) % 10 + '0';
+  mask[49] = (rpms / 100) % 10 + '0';
+  mask[50] = (rpms / 10) % 10 + '0';
+  mask[51] = (rpms) % 10 + '0';
+
+  mask[55] = mask[2];
+  mask[56] = mask[3];
+  mask[57] = mask[4];
+  mask[59] = mask[6];
+
+  mask[61] = mask[25];
+  mask[62] = mask[26];
+  mask[63] = mask[27];
+  mask[65] = mask[29];
+
+  Serial1.write(mask);
 }
 
 void ignition(uint32_t timestamp, void *) {
@@ -53,9 +66,10 @@ void ignition_timeout(void *) {
 extern "C" void setup() {
   dwt_timer_init();
   HAL_UART_Transmit(&huart1, (uint8_t*)("Started\r\n"), 9, 1000);
-  wTimer = new Timer(100, writer, NULL);
+  wTimer = new Timer(50, writer, NULL);
   crAngle = new CAngle(60, 2, dwt_timer_resolution());
   igTrigger = new Trigger(TRIGGER_FALLING, dwt_timer_resolution() / 5000, ignition, NULL, dwt_timer_resolution(), ignition_timeout, NULL);
+  be_report = strdup(be_report_mask);
 }
 
 
@@ -75,8 +89,8 @@ extern "C" void loop() {
 
   unsigned long t2 = dwt_timer_get();
   Serial1.flush();
-  if (t2-now > 2000) {
-      Serial1.printf("Too long: %lu\n", t2-now);
-  }
+//  if (t2-now > 1200) {
+//      Serial1.printf("Too long: %lu\n", t2-now);
+//  }
 }
 
