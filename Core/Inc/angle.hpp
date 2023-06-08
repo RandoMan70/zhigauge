@@ -16,6 +16,7 @@ class CAngle {
     static void reset_cb(unsigned long ts, void * arg);
 
     int m_edge_count;
+    int m_edge_resolution;
     unsigned long m_minimal_edge_interval;
 
     int m_last_edge_id;

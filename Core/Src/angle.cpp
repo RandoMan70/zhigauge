@@ -5,6 +5,7 @@
 
 CAngle::CAngle(int teeth_total, int teeth_gap, unsigned long ts_resolution) {
   m_edge_count = (teeth_total - teeth_gap) * 2 - 1;
+  m_edge_resolution = teeth_total * 2;
   m_minimal_edge_interval = (ts_resolution * 10) / (teeth_total * 2); // Assuming minimally one rotation per 10 seconds
   cshaft = new CCrankshaft(edge_cb, reset_cb, m_minimal_edge_interval, this);
 
@@ -20,7 +21,7 @@ int CAngle::angle(unsigned long ts) {
       return -1;
   }
 
-  return 3600 * m_last_edge_id / m_edge_count + 3600 * (ts - m_last_edge_ts) / m_last_edge_interval / m_edge_count;
+  return 3600 * m_last_edge_id / m_edge_resolution + 3600 * (ts - m_last_edge_ts) / m_last_edge_interval / m_edge_resolution;
 }
 
 unsigned int CAngle::edge_delta(unsigned long ts) {
